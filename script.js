@@ -72,21 +72,12 @@ function setAlarms() {
         const [hours, minutes] = alarmData.time.split(":");
 
         const now = new Date();
-        let nextAlarmDate = new Date();
-        nextAlarmDate.setHours(hours, minutes, 0, 0);
-
-        // Calcula o dia da semana para o alarme
-        const dayOfWeek = now.getDay();
         const alarmDays = alarmData.days.map(day => daysOfWeek[day]);
         
         // Adiciona uma semana se o alarme for para um dia da semana futuro
-        if (alarmDays.includes(dayOfWeek)) {
-            let timeToAlarm = nextAlarmDate.getTime() - now.getTime();
-            if (timeToAlarm < 0) {
-                // Se o horário já passou, define o alarme para o próximo dia da semana correspondente
-                nextAlarmDate.setDate(nextAlarmDate.getDate() + 7);
-                timeToAlarm = nextAlarmDate.getTime() - now.getTime();
-            }
+        let nextAlarmDate = getNextAlarmDate(now, hours, minutes, alarmDays);
+        if (nextAlarmDate) {
+            const timeToAlarm = nextAlarmDate.getTime() - now.getTime();
 
             setTimeout(() => {
                 navigator.serviceWorker.ready.then(function(registration) {
@@ -109,16 +100,32 @@ function setAlarms() {
                     text: `Hora de ${alarmData.task}!`,
                     showConfirmButton: true,
                 });
-
-                removeAlarm(alarmData); // Remove o alarme após tocar
             }, timeToAlarm);
         }
     });
 }
 
+function getNextAlarmDate(now, hours, minutes, alarmDays) {
+    let nextAlarmDate = null;
+    const currentDay = now.getDay();
+
+    for (let i = 0; i < 7; i++) {
+        let dayOffset = (i + currentDay) % 7;
+        if (alarmDays.includes(dayOffset)) {
+            nextAlarmDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, hours, minutes, 0, 0);
+            if (nextAlarmDate < now) {
+                nextAlarmDate.setDate(nextAlarmDate.getDate() + 7);
+            }
+            break;
+        }
+    }
+
+    return nextAlarmDate;
+}
+
 function removeAlarm(alarmToRemove) {
     let alarms = JSON.parse(localStorage.getItem("alarms")) || [];
-    alarms = alarms.filter(alarm => !(alarm.time === alarmToRemove.time && alarm.task === alarmToRemove.task));
+    alarms = alarms.filter(alarm => !(alarm.time === alarmToRemove.time && alarm.task === alarmToRemove.task && alarm.days.join(',') === alarmToRemove.days.join(',')));
     localStorage.setItem("alarms", JSON.stringify(alarms));
     displayAlarms();
 }
