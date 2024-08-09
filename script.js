@@ -1,5 +1,6 @@
-// Registrar o Service Worker
-if ('serviceWorker' in navigator) {
+// Verifica se o Service Worker e a API de Notificações são suportados
+if ('serviceWorker' in navigator && 'Notification' in window) {
+    // Registrar o Service Worker
     navigator.serviceWorker.register('service-worker.js')
     .then(function(registration) {
         console.log('Service Worker registrado com sucesso:', registration);
@@ -7,21 +8,23 @@ if ('serviceWorker' in navigator) {
     .catch(function(error) {
         console.log('Falha ao registrar o Service Worker:', error);
     });
-}
 
-// Solicitar permissão para notificações
-function askNotificationPermission() {
-    return Notification.requestPermission();
-}
-
-// Solicitar permissão ao carregar a página
-askNotificationPermission().then(permission => {
-    if (permission === 'granted') {
-        console.log('Permissão concedida para notificações.');
-    } else {
-        console.log('Permissão negada para notificações.');
+    // Solicitar permissão para notificações
+    function askNotificationPermission() {
+        return Notification.requestPermission();
     }
-});
+
+    // Solicitar permissão ao carregar a página
+    askNotificationPermission().then(permission => {
+        if (permission === 'granted') {
+            console.log('Permissão concedida para notificações.');
+        } else {
+            console.log('Permissão negada para notificações.');
+        }
+    });
+} else {
+    console.log('Service Worker ou Notificações não suportadas.');
+}
 
 document.getElementById("alarmForm").addEventListener("submit", function(event) {
     event.preventDefault();
