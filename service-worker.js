@@ -1,10 +1,9 @@
 self.addEventListener('install', event => {
     console.log('Service Worker instalado.');
-    // Usar event.waitUntil para garantir que a instalação seja concluída
+    // Cache estático, se necessário
     event.waitUntil(
         caches.open('your-cache-name').then(cache => {
             return cache.addAll([
-                // Adicione os arquivos que você deseja armazenar em cache
                 '/',
                 '/index.html',
                 '/style.css',
@@ -18,7 +17,6 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
     console.log('Service Worker ativado.');
-    // Limpar caches antigos, se necessário
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
@@ -35,8 +33,21 @@ self.addEventListener('activate', event => {
 self.addEventListener('notificationclick', event => {
     console.log('Notificação clicada:', event.notification);
     event.notification.close();
+    event.waitUntil(
+        clients.openWindow('/') // Substitua pela URL que você deseja abrir
+    );
+});
+
+self.addEventListener('push', event => {
+    console.log('Push recebido:', event);
+    const data = event.data.json();
+    const options = {
+        body: data.body,
+        icon: 'relogio.png',
+        badge: 'despertador.png',
+    };
 
     event.waitUntil(
-        clients.openWindow('/') // Abrir a página principal ou outra URL quando a notificação for clicada
+        self.registration.showNotification(data.title, options)
     );
 });
