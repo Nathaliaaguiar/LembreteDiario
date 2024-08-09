@@ -1,7 +1,39 @@
+// Registrar o Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+    .then(function(registration) {
+        console.log('Service Worker registrado com sucesso:', registration);
+    })
+    .catch(function(error) {
+        console.log('Falha ao registrar o Service Worker:', error);
+    });
+}
+
+// Solicitar permissão para notificações
+function askNotificationPermission() {
+    return new Promise((resolve, reject) => {
+        const permissionResult = Notification.requestPermission((result) => {
+            resolve(result);
+        });
+
+        if (permissionResult) {
+            permissionResult.then(resolve, reject);
+        }
+    });
+}
+
+// Solicitar permissão ao carregar a página
+askNotificationPermission().then(permission => {
+    if (permission === 'granted') {
+        console.log('Permissão concedida para notificações.');
+    } else {
+        console.log('Permissão negada para notificações.');
+    }
+});
+
 document.getElementById("alarmForm").addEventListener("submit", function(event) {
     event.preventDefault();
-    
-    const form = event.target;
+
     const task = document.getElementById("task").value;
     const alarmDate = document.getElementById("alarmDate").value;
     const alarmTime = document.getElementById("alarmTime").value;
@@ -27,7 +59,7 @@ document.getElementById("alarmForm").addEventListener("submit", function(event) 
     setAlarm(alarmData);
 
     // Limpa o formulário
-    form.reset();
+    event.target.reset();
 });
 
 function setAlarm(alarmData) {
@@ -44,6 +76,14 @@ function setAlarm(alarmData) {
 
     if (timeToAlarm >= 0) {
         setTimeout(() => {
+            navigator.serviceWorker.ready.then(function(registration) {
+                registration.showNotification('Alarme!', {
+                    body: `Hora de ${alarmData.task}!`,
+                    icon: 'icon.png',
+                    badge: 'badge.png'
+                });
+            });
+
             const alarmSound = document.getElementById("alarmSound");
             alarmSound.play(); // Toca o som do alarme
 
