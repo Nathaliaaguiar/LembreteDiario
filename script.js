@@ -79,8 +79,8 @@ function setAlarm(alarmData) {
             navigator.serviceWorker.ready.then(function(registration) {
                 registration.showNotification('Alarme!', {
                     body: `Hora de ${alarmData.task}!`,
-                    icon: 'icon.png',
-                    badge: 'badge.png'
+                    icon: 'relogio.png',
+                    badge:'despertador.png'
                 });
             });
 
