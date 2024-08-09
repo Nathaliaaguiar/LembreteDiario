@@ -17,22 +17,27 @@
             </div>
             
             <div class="input-group">
-                <label for="alarmDate">Data:</label>
-                <input type="date" id="alarmDate" required>
+                <label for="alarmTime">Horário:</label>
+                <input type="time" id="alarmTime" required>
             </div>
             
             <div class="input-group">
-                <label for="alarmTime">Horário:</label>
-                <input type="time" id="alarmTime" required>
+                <label>Dias:</label>
+                <label><input type="checkbox" name="days" value="domingo"> Domingo</label>
+                <label><input type="checkbox" name="days" value="segunda"> Segunda</label>
+                <label><input type="checkbox" name="days" value="terça"> Terça</label>
+                <label><input type="checkbox" name="days" value="quarta"> Quarta</label>
+                <label><input type="checkbox" name="days" value="quinta"> Quinta</label>
+                <label><input type="checkbox" name="days" value="sexta"> Sexta</label>
+                <label><input type="checkbox" name="days" value="sábado"> Sábado</label>
             </div>
             
             <button type="submit">Definir Alarme</button>
         </form>
         
         <div id="alarmMessage"></div>
+        <div id="alarmList"></div>
     </div>
-
-    <audio id="alarmSound" src="alarme1.mp3" preload="auto"></audio>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js"></script>

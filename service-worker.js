@@ -1,12 +1,11 @@
-self.addEventListener('push', function(event) {
-    const data = event.data ? event.data.json() : {};
-    const options = {
-        body: data.body || 'Hora do alarme!',
-        icon: 'icon.png',
-        badge: 'badge.png'
-    };
+self.addEventListener('install', event => {
+    console.log('Service Worker instalado.');
+});
 
-    event.waitUntil(
-        self.registration.showNotification(data.title || 'Alarme', options)
-    );
+self.addEventListener('activate', event => {
+    console.log('Service Worker ativado.');
+});
+
+self.addEventListener('notificationclick', event => {
+    console.log('Notificação clicada:', event.notification);
 });

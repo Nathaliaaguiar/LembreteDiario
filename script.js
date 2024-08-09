@@ -11,15 +11,7 @@ if ('serviceWorker' in navigator) {
 
 // Solicitar permissão para notificações
 function askNotificationPermission() {
-    return new Promise((resolve, reject) => {
-        const permissionResult = Notification.requestPermission((result) => {
-            resolve(result);
-        });
-
-        if (permissionResult) {
-            permissionResult.then(resolve, reject);
-        }
-    });
+    return Notification.requestPermission();
 }
 
 // Solicitar permissão ao carregar a página
@@ -35,83 +27,130 @@ document.getElementById("alarmForm").addEventListener("submit", function(event) 
     event.preventDefault();
 
     const task = document.getElementById("task").value;
-    const alarmDate = document.getElementById("alarmDate").value;
     const alarmTime = document.getElementById("alarmTime").value;
+    const days = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(el => el.value);
 
-    if (!task || !alarmDate || !alarmTime) {
+    if (!task || !alarmTime || days.length === 0) {
         Swal.fire({
             icon: 'error',
             title: 'Oops...',
-            text: 'Por favor, preencha todos os campos!',
+            text: 'Por favor, preencha todos os campos e selecione ao menos um dia!',
         });
         return;
     }
 
     const alarmData = {
         task: task,
-        date: alarmDate,
-        time: alarmTime
+        time: alarmTime,
+        days: days
     };
 
-    // Salva no localStorage
-    localStorage.setItem("alarm", JSON.stringify(alarmData));
+    let alarms = JSON.parse(localStorage.getItem("alarms")) || [];
+    alarms.push(alarmData);
+    localStorage.setItem("alarms", JSON.stringify(alarms));
 
-    setAlarm(alarmData);
+    displayAlarms();
+    setAlarms();
 
     // Limpa o formulário
     event.target.reset();
 });
 
-function setAlarm(alarmData) {
-    const alarmMessage = document.getElementById("alarmMessage");
-    alarmMessage.innerText = `Alarme definido para: ${alarmData.task} em ${alarmData.date} às ${alarmData.time}`;
-    alarmMessage.classList.add('show');
+function setAlarms() {
+    let alarms = JSON.parse(localStorage.getItem("alarms")) || [];
+    const daysOfWeek = {
+        'domingo': 0,
+        'segunda': 1,
+        'terça': 2,
+        'quarta': 3,
+        'quinta': 4,
+        'sexta': 5,
+        'sábado': 6
+    };
 
-    const [year, month, day] = alarmData.date.split("-");
-    const [hours, minutes] = alarmData.time.split(":");
+    alarms.forEach(alarmData => {
+        const [hours, minutes] = alarmData.time.split(":");
 
-    const alarmDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+        const now = new Date();
+        let nextAlarmDate = new Date();
+        nextAlarmDate.setHours(hours, minutes, 0, 0);
 
-    const timeToAlarm = alarmDate.getTime() - new Date().getTime();
+        // Calcula o dia da semana para o alarme
+        const dayOfWeek = now.getDay();
+        const alarmDays = alarmData.days.map(day => daysOfWeek[day]);
+        
+        // Adiciona uma semana se o alarme for para um dia da semana futuro
+        if (alarmDays.includes(dayOfWeek)) {
+            let timeToAlarm = nextAlarmDate.getTime() - now.getTime();
+            if (timeToAlarm < 0) {
+                // Se o horário já passou, define o alarme para o próximo dia da semana correspondente
+                nextAlarmDate.setDate(nextAlarmDate.getDate() + 7);
+                timeToAlarm = nextAlarmDate.getTime() - now.getTime();
+            }
 
-    if (timeToAlarm >= 0) {
-        setTimeout(() => {
-            navigator.serviceWorker.ready.then(function(registration) {
-                registration.showNotification('Alarme!', {
-                    body: `Hora de ${alarmData.task}!`,
-                    icon: 'relogio.png',
-                    badge:'despertador.png'
+            setTimeout(() => {
+                navigator.serviceWorker.ready.then(function(registration) {
+                    registration.showNotification('Alarme!', {
+                        body: `Hora de ${alarmData.task}!`,
+                        icon: 'relogio.png',
+                        badge: 'despertador.png'
+                    });
                 });
-            });
 
-            const alarmSound = document.getElementById("alarmSound");
-            alarmSound.play(); // Toca o som do alarme
+                // Toca o som do alarme sem exibir o aviso de áudio
+                const alarmSound = new Audio('alarme1.mp3');
+                alarmSound.play().catch(error => {
+                    console.error('Erro ao tocar o som do alarme:', error);
+                });
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Alarme!',
-                text: `Hora de ${alarmData.task}!`,
-                showConfirmButton: true,
-            });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Alarme!',
+                    text: `Hora de ${alarmData.task}!`,
+                    showConfirmButton: true,
+                });
 
-            localStorage.removeItem("alarm"); // Limpa o alarme do localStorage após tocar
-            alarmMessage.classList.remove('show'); // Oculta a mensagem após o alarme tocar
-        }, timeToAlarm);
-    } else {
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'A data e horário selecionados já passaram. Por favor, selecione uma data e horário futuros.',
-        });
-        localStorage.removeItem("alarm"); // Remove alarme inválido
-    }
+                removeAlarm(alarmData); // Remove o alarme após tocar
+            }, timeToAlarm);
+        }
+    });
 }
 
-// Carrega o alarme salvo ao recarregar a página
+function removeAlarm(alarmToRemove) {
+    let alarms = JSON.parse(localStorage.getItem("alarms")) || [];
+    alarms = alarms.filter(alarm => !(alarm.time === alarmToRemove.time && alarm.task === alarmToRemove.task));
+    localStorage.setItem("alarms", JSON.stringify(alarms));
+    displayAlarms();
+}
+
+function displayAlarms() {
+    const alarmList = document.getElementById("alarmList");
+    alarmList.innerHTML = '';
+
+    let alarms = JSON.parse(localStorage.getItem("alarms")) || [];
+
+    alarms.forEach(alarm => {
+        const alarmItem = document.createElement("div");
+        alarmItem.className = "alarm-item";
+
+        const alarmText = document.createElement("span");
+        alarmText.textContent = `Tarefa: ${alarm.task}, Hora: ${alarm.time}, Dias: ${alarm.days.join(', ')}`;
+        
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-btn";
+        removeBtn.textContent = "Remover";
+        removeBtn.onclick = function() {
+            removeAlarm(alarm);
+        };
+
+        alarmItem.appendChild(alarmText);
+        alarmItem.appendChild(removeBtn);
+        alarmList.appendChild(alarmItem);
+    });
+}
+
+// Carrega os alarmes salvos ao recarregar a página
 window.onload = function() {
-    const savedAlarm = localStorage.getItem("alarm");
-    if (savedAlarm) {
-        const alarmData = JSON.parse(savedAlarm);
-        setAlarm(alarmData);
-    }
+    displayAlarms();
+    setAlarms();
 };
