@@ -29,7 +29,7 @@ body {
 h1 {
     font-size: 28px;
     margin-bottom: 20px;
-    color: #007bff;
+    color: #FF007F;
 }
 
 .input-group {
@@ -54,14 +54,14 @@ input {
 }
 
 input:focus {
-    border-color: #007bff;
-    outline: none;
+    border-color: #FF007F;
+  outline: none;
 }
 
 button {
     width: 100%;
     padding: 12px 15px;
-    background-color: #007bff;
+    background-color: #FF007F;
     color: white;
     border: none;
     border-radius: 8px;
@@ -71,7 +71,7 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #FF007F;
 }
 
 #alarmMessage {
