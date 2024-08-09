@@ -1,4 +1,4 @@
-# Despertador Moderno
+#Lembrete diário
 
 Um despertador simples e moderno implementado usando HTML, CSS e JavaScript. Este projeto permite que os usuários definam alarmes para uma data e hora específica e recebe notificações push quando o alarme dispara.
 
