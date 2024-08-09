@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Lembrete Diário</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Lembrete Diário</h1>
+        <h1>Lembrete Diário⏰</h1>
         <form id="alarmForm">
             <div class="input-group">
                 <label for="task">Tarefa:</label>
                 <input type="text" id="task" placeholder="O que você vai fazer?" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="alarmDate">Data:</label>
+                <input type="date" id="alarmDate" required>
             </div>
             
             <div class="input-group">
@@ -30,6 +33,7 @@
 
     <audio id="alarmSound" src="alarme.mp3" preload="auto"></audio>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js"></script>
 </body>
 </html>

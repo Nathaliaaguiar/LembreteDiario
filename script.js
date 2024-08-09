@@ -3,9 +3,10 @@ document.getElementById("alarmForm").addEventListener("submit", function(event) 
     
     const form = event.target;
     const task = document.getElementById("task").value;
+    const alarmDate = document.getElementById("alarmDate").value;
     const alarmTime = document.getElementById("alarmTime").value;
 
-    if (!task || !alarmTime) {
+    if (!task || !alarmDate || !alarmTime) {
         Swal.fire({
             icon: 'error',
             title: 'Oops...',
@@ -16,6 +17,7 @@ document.getElementById("alarmForm").addEventListener("submit", function(event) 
 
     const alarmData = {
         task: task,
+        date: alarmDate,
         time: alarmTime
     };
 
@@ -30,14 +32,13 @@ document.getElementById("alarmForm").addEventListener("submit", function(event) 
 
 function setAlarm(alarmData) {
     const alarmMessage = document.getElementById("alarmMessage");
-    alarmMessage.innerText = `Alarme definido para: ${alarmData.task} às ${alarmData.time}`;
+    alarmMessage.innerText = `Alarme definido para: ${alarmData.task} em ${alarmData.date} às ${alarmData.time}`;
     alarmMessage.classList.add('show');
 
-    const alarmDate = new Date();
+    const [year, month, day] = alarmData.date.split("-");
     const [hours, minutes] = alarmData.time.split(":");
-    alarmDate.setHours(hours);
-    alarmDate.setMinutes(minutes);
-    alarmDate.setSeconds(0);
+
+    const alarmDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
 
     const timeToAlarm = alarmDate.getTime() - new Date().getTime();
 
@@ -60,7 +61,7 @@ function setAlarm(alarmData) {
         Swal.fire({
             icon: 'error',
             title: 'Oops...',
-            text: 'O horário selecionado já passou. Por favor, selecione um horário futuro.',
+            text: 'A data e horário selecionados já passaram. Por favor, selecione uma data e horário futuros.',
         });
         localStorage.removeItem("alarm"); // Remove alarme inválido
     }
